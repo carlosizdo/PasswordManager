@@ -13,20 +13,32 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 
+from django.core.management.utils import get_random_secret_key
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Carga las variables del archivo .env (no se sube a GitHub)
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '<eliminado>'
+# La clave se lee del entorno. En desarrollo, si no hay ninguna, se genera una
+# temporal para que el proyecto arranque igualmente.
+DEBUG = os.environ.get("DJANGO_DEBUG", "False") == "True"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = get_random_secret_key()
+    else:
+        raise RuntimeError("Falta la variable de entorno DJANGO_SECRET_KEY")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h]
 
 # Application definition
 
@@ -120,17 +132,23 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# Credenciales del correo desde el entorno. Sin contraseña, los correos
+# (código de verificación, recuperación) se muestran en la consola.
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+
+if EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 
-EMAIL_HOST_USER = 'securepass72@gmail.com'
-EMAIL_HOST_PASSWORD = '<eliminado>'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or "webmaster@localhost"
 
 # Dominio real del Codespace para que los enlaces del email no usen "localhost"
-PASSWORD_RESET_DOMAIN = "literate-space-bassoon-5gvvgv6p95pj2665-8000.app.github.dev"
+PASSWORD_RESET_DOMAIN = os.environ.get("PASSWORD_RESET_DOMAIN", "localhost:8000")
 
 # Protocolo correcto para generar los enlaces (en Codespaces se usa https)
-PASSWORD_RESET_PROTOCOL = "https"
+PASSWORD_RESET_PROTOCOL = os.environ.get("PASSWORD_RESET_PROTOCOL", "https")

@@ -13,12 +13,19 @@ SecurePass es una página web de gestión de contraseñas que permite a los usua
 1. Abrir el repositorio en GitHub.
 2. Hacer clic en Code --> Create Codespace on main.
 3. Esperar a que se inicialice el entorno (GitHub instalará las dependencias desde requirements.txt).
+   Al crearse, el Codespace copia `.env.example` como `.env`. Si quieres que los correos se envíen de verdad,
+   rellena en `.env` las variables `EMAIL_HOST_USER` y `EMAIL_HOST_PASSWORD` (contraseña de aplicación de Gmail).
+   Si las dejas vacías, el código de verificación y los correos de recuperación aparecen en la terminal.
 4. Cuando el Codespaces esté listo, ejecutar las migraciones:
     python manage.py migrate
 5. Iniciar el servidor:
     python manage.py runserver 0.0.0.0:8000
 6. GitHub abrirá automáticamente la URL donde corre la aplicación.
 7. Crear un usuario con un correo válido y comenzar a usar la página web.
+
+# Configuración (variables de entorno)
+Las claves y contraseñas no están en el código: se leen de un archivo `.env` que no se sube a GitHub.
+Copia `.env.example` como `.env` y rellena los valores. Consulta `.env.example` para ver todas las variables.
 
 # Estructura del proyecto
 PasswordManager/
